@@ -33,11 +33,11 @@ export const setupLibp2pNode = async () => {
     function discover() {
         config.bootstrappingServers.map(async server => {
             try {
-                const listeners = await (await fetch(`${server}/api/listeners`)).json()
+                const listeners = await (await fetch(`${server}/api/listeners?random=${Math.random().toString(32).slice(2)}`)).json()
                 listeners.filter(l => l.includes("wss")).forEach(async l => {
                     try { await node.dial(multiaddr(l)); } catch (e) { }
                 })
-                const peers = await (await fetch(`${server}/api/discovery`)).json()
+                const peers = await (await fetch(`${server}/api/discovery?random=${Math.random().toString(32).slice(2)}`)).json()
                 peers.filter(l => l.includes("wss")).forEach(async p => {
                     try { await node.dial(multiaddr(p)) } catch (e) { }
                 })
