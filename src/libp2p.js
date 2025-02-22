@@ -32,23 +32,25 @@ export const setupLibp2pNode = async () => {
     });
     function discover() {
         config.bootstrappingServers.map(async server => {
-          try {
-            const listeners = await (await fetch(`${server}/api/listeners`)).json()
-            listeners.filter(l=>l.includes("ws")).forEach(async l => await node.dial(multiaddr(l)))
+            try {
+                const listeners = await (await fetch(`${server}/api/listeners`)).json()
+                listeners.filter(l => l.includes("wss")).forEach(async l => {
+                    try { await node.dial(multiaddr(l)); } catch (e) { }
+                })
+                const peers = await (await fetch(`${server}/api/discovery`)).json()
+                peers.filter(l => l.includes("wss")).forEach(async p => {
+                    try { await node.dial(multiaddr(p)) } catch (e) { }
+                })
+            } catch (e) {
 
-            const peers = await (await fetch(`${server}/api/discovery`)).json()
-            peers.filter(l=>l.includes("ws")).forEach(async p => await node.dial(multiaddr(p)))
-          } catch (e) {
-    
-          }
+            }
         })
-      }
-      discover()
-      setInterval(discover, 1000 * 30)
+    }
+    discover()
+    setInterval(discover, 1000 * 30)
     node.services.pubsub.subscribe('posts');
     node.services.pubsub.subscribe('catchup');
     node.services.pubsub.subscribe('backlog');
-    await node.dial(multiaddr("/ip4/37.27.51.34/tcp/43815/ws/p2p/12D3KooWJhJ1mF3f13UGfQUBMkBALnk46yYYewaYf9WRUuEpZha3"))
     setInterval(async function () {
         try {
             document.querySelector("#peers").innerText = `${(await node.peerStore.all()).length} peers connected`
