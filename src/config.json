@@ -1,3 +1,3 @@
 {
-  "bootstrappingServers": ["https://discovery.openherd.dispherical.com"]
+  "bootstrappingServers": ["https://openherd.dispherical.com","https://discovery.openherd.dispherical.com"]
 }

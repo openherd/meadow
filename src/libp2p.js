@@ -35,14 +35,38 @@ export const setupLibp2pNode = async () => {
             try {
                 const listeners = await (await fetch(`${server}/api/listeners?random=${Math.random().toString(32).slice(2)}`, { cache: 'no-store' })).json()
                 listeners.filter(l => l.includes("wss")).forEach(async l => {
-                    try { await node.dial(multiaddr(l)); } catch (e) { }
+                    try {
+                        console.info(`Attempting to dial ${l} for listening`)
+                        await node.dial(multiaddr(l));
+                    } catch (e) {
+                        console.warn(`Failed to dial ${l} for discovery`, e)
+                        try {
+                            console.info(l.replace(/\/tcp\/\d+\//, `/tcp/443/`))
+                            await node.dial(multiaddr(l.replace(/\/tcp\/\d+\//, `/tcp/443/`)))
+                        } catch (e) {
+                            console.warn("Failed to dial. Giving up.", e)
+                        }
+                    }
                 })
+                console.log("eeeee")
                 const peers = await (await fetch(`${server}/api/discovery?random=${Math.random().toString(32).slice(2)}`, { cache: 'no-store' })).json()
                 peers.filter(l => l.includes("wss")).forEach(async p => {
-                    try { await node.dial(multiaddr(p)) } catch (e) { }
+                    try {
+                        console.info(`Attempting to dial ${p} for discovery`)
+                        await node.dial(multiaddr(p))
+                    } catch (e) {
+                        console.warn(`Failed to dial ${p} for discovery`, e)
+                        console.info(`Redialing with port 443`)
+                        try {
+                            console.info(p.replace(/\/tcp\/\d+\//, `/tcp/443/`))
+                            await node.dial(multiaddr(p.replace(/\/tcp\/\d+\//, `/tcp/443/`)))
+                        } catch (e) {
+                            console.warn("Failed to dial. Giving up.", e)
+                        }
+                    }
                 })
             } catch (e) {
-    
+
             }
         })
     }
