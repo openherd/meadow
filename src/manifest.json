@@ -1,0 +1,20 @@
+{
+    "name": "OpenHerd",
+    "short_name": "OpenHerd",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "description": "OpenHerd is a decentralized, anonymous communication platform based on libp2p.",
+    "icons": [
+      {
+        "src": "icons/android-chrome-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "icons/android-chrome-192x192.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  }
