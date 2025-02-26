@@ -131,7 +131,7 @@ const setupNodeListeners = async (node, messageBuffer) => {
                 }));
             }
         } catch (e) {
-            console.error(e);
+            console.warn(e);
         }
     });
     setInterval(function () {

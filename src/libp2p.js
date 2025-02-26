@@ -48,7 +48,6 @@ export const setupLibp2pNode = async () => {
                         }
                     }
                 })
-                console.log("eeeee")
                 const peers = await (await fetch(`${server}/api/discovery?random=${Math.random().toString(32).slice(2)}`, { cache: 'no-store' })).json()
                 peers.filter(l => l.includes("wss")).forEach(async p => {
                     try {

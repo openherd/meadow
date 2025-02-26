@@ -114,27 +114,55 @@ export function skewLocation(lat, lon, minDistanceKm = 2, maxDistanceKm = 2.7) {
 
   return { latitude: newLat, longitude: newLon };
 }
-export function rankPosts(posts, userLat, userLon) {
-  const alpha = 0.3;
-  const beta = 0.3;
+
+
+export function rankPosts(posts, userLat, userLon, locationWeight = 0.7, timeWeight = 0.3, clusterRadius = 2500, maxDistance = 100000) {
   const now = Date.now();
+  const clusters = [];
 
-  return posts.map(post => {
-    const distance = geolib.getDistance({
-      latitude: userLat,
-      longitude: userLon
-    },
-      {
-        latitude: post.latitude,
-        longitude: post.longitude
-      });
-    const hoursAgo = (now - new Date(post.date).getTime()) / 3600000;
+  posts.forEach(post => {
+    const distance = geolib.getDistance(
+      { latitude: userLat, longitude: userLon },
+      { latitude: post.latitude, longitude: post.longitude }
+    );
 
-    const score = Math.exp(-alpha * distance) * Math.exp(-beta * hoursAgo);
+    let foundCluster = false;
+    for (let cluster of clusters) {
+      if (distance < clusterRadius) {
+        cluster.push(post);
+        foundCluster = true;
+        break;
+      }
+    }
 
-    return { ...post, score };
-  }).sort((a, b) => b.score - a.score);
+    if (!foundCluster) {
+      clusters.push([post]);
+    }
+  });
+
+  const rankedPosts = clusters.map(cluster => {
+    return cluster
+      .map(post => {
+        const distance = geolib.getDistance(
+          { latitude: userLat, longitude: userLon },
+          { latitude: post.latitude, longitude: post.longitude }
+        );
+        const hoursAgo = (now - new Date(post.createdAt).getTime()) / 3600000;
+        const scaledDistance = Math.min(distance, maxDistance); 
+        const locationScore = Math.exp(-locationWeight * (scaledDistance / 1000)); 
+        const timeScore = 1 / (1 + timeWeight * hoursAgo);
+        const score = locationScore * timeScore;
+        return { ...post, score };
+      })
+      .sort((a, b) => b.score - a.score);
+  });
+  const allRankedPosts = rankedPosts.flat().sort((a, b) => b.score - a.score);
+
+  return allRankedPosts;
 }
+
+
+
 
 export async function newPost({ latitude, longitude, text, parent, node, db }) {
   const postDate = new Date();
