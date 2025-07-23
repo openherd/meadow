@@ -94,7 +94,7 @@ export async function importPost({ signature, publicKey, data, node, from, raw }
 
   } catch (e) {
     console.error('Signature verification failed:', e);
-    await node.hangUp(from);
+    if (node) await node.hangUp(from);
   }
   return null;
 }

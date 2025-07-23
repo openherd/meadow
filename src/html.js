@@ -86,7 +86,6 @@ export const initializeApp = async (node, db) => {
 
 const setupNodeListeners = async (node, messageBuffer) => {
     const db = await IndexedDatabase('herds', { schema: schemaMockup });
-
     node.addEventListener('peer:disconnect', async (event) => {
         const peerId = event.detail;
         console.log(`Peer disconnected: ${peerId.toString()}`);
